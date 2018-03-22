@@ -78,7 +78,6 @@ function! vim_you_autocorrect#enable_autocorrect() abort
   " Save 'spell'
   " FIXME: 'spell' is window local, but the autocommands are buffer local.
   let w:vim_you_autocorrect_spell = &spell
-  echom "SETTING SPELL"
   setlocal spell
 
   silent! call <SID>remove_autocommands()
