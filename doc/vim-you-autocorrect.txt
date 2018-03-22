@@ -1,0 +1,120 @@
+*vim-you-autocorrect.txt*  Why should smartphones get all the fun?
+*autocorrect* *vim-you-autocorrect*
+
+         Author:  Rich Cheng <http://whileyouweregone.co.uk>
+       Homepage:  http://github.com/sedm0784/vim-you-autocorrect
+      Copyright:  © 2018 Rich Cheng
+        Licence:  Vim You, Autocorrect! uses the same licence as Vim. (See
+                  |license|.)
+        Version:  1.0.0
+
+==============================================================================
+     _      _   _          _     ___   _                                   ~
+    \ \  / | | | |\/|     \ \_/ / / \ | | |  __                            ~
+     \_\/  |_| |_|  |      |_|  \_\_/ \_\_/ /_/)                           ~
+      __    _    _____  ___   __    ___   ___   ___   ____  __   _____  __ ~
+     / /\  | | |  | |  / / \ / /`  / / \ | |_) | |_) | |_  / /`   | |  |_/ ~
+    /_/--\ \_\_/  |_|  \_\_/ \_\_, \_\_/ |_| \ |_| \ |_|__ \_\_,  |_|  (_) ~
+
+                                 Why should smartphones get all the fun?
+==============================================================================
+CONTENTS                                                *autocorrect-contents*
+
+    1. Introduction ..........................|autocorrect-introduction|
+    2. Usage .................................|autocorrect-usage|
+        2.1 Commands .........................|autocorrect-commands|
+    3. How Does It Work? .....................|autocorrect-how-does-it-work|
+    4. Changelog .............................|autocorrect-changelog|
+    5. Issues ................................|autocorrect-issues|
+        5.1 Known Issues .....................|autocorrect-known-issues|
+        5.2 Reporting Issues .................|autocorrect-reporting-issues|
+    6. Credits ...............................|autocorrect-credits|
+
+==============================================================================
+1. Introduction                                     *autocorrect-introduction*
+
+Vim You, Autocorrect! releases you from the DRUDGERY of having to correct your
+spelling mistakes and typos by automatically accepting Vim's suggestions for
+each miss-spelled word as you type.
+
+==============================================================================
+2. Usage                                                   *autocorrect-usage*
+
+Simply switch Vim You, Autocorrect! on by typing |:EnableAutocorrect|, and
+never have to worry about spelling errors again!
+
+------------------------------------------------------------------------------
+2.1 Commands                                            *autocorrect-commands*
+
+                                              *autocorrect-:EnableAutocorrect*
+:EnableAutocorrect
+               This turns on Vim You, Autocorrect! for the current buffer. Most
+               likely you will want to enable autocorrections globally by
+               adding something like the following to your .vimrc file:
+>
+               augroup ILoveCorrections
+                 autocmd!
+                 autocmd BufNewFile,BufRead * EnableAutocorrect
+               augroup END
+<
+
+                                             *autocorrect-:DisableAutocorrect*
+:DisableAutocorrect
+               This turns Vim You, Autocorrect! off again. You will probably
+               never want to do this I don't know why I implemented it.
+
+==============================================================================
+3. How Does It Work?                            *autocorrect-how-does-it-work*
+
+Vim You, Autocorrect! has a very sophisticated and subtle mechanism. The full
+details of how it works are almost impossible to explain, but essentially it
+does something like the following:
+
+   1. As you finish typing each word, Vim You, Autocorrect! issues a   `[s`
+      motion command,
+   2. If a spelling error is detected, Vim You, Autocorrect! issues a   `z=1`
+      command to accept the first spelling suggestion.
+
+==============================================================================
+4. Changelog                                           *autocorrect-changelog*
+
+Version 1.0.0 - Vim You, Autocorrect! released
+
+==============================================================================
+5. Issues                                                 *autocorrect-issues*
+
+------------------------------------------------------------------------------
+5.1 Known Limitations                               *autocorrect-known-issues*
+
+Vim You, Autocorrect! is flawless, both in execution and more importantly in
+conception.
+
+------------------------------------------------------------------------------
+5.2 Reporting Issues                            *autocorrect-reporting-issues*
+
+If your issue is anything other than, “I'm struggling to cope with how
+remarkably SPECTACULAR Vim You, Autocorrect! is,” then it seems likely your
+problem is caused by user error, because Vim You, Autocorrect! is PERFECT.
+(See |autocorrect-known-issues|, above).
+
+Nevertheless, you can still contact me via the GitHub repository:
+
+    https://github.com/sedm0784/vim-you-autocorrect
+
+Or if you prefer, feel free to email or tweet instead:
+
+    vim dot you dot autocorrect at whileyouweregone dot co dot uk
+    @sedm0784
+
+==============================================================================
+6. Credits                                               *autocorrect-credits*
+
+Vim You, Autocorrect! was written by Rich Cheng.
+
+The banner at the top of this help file was created using the “Broadway KB”
+FIGlet font at the Text ASCII Art Generator:
+
+    http://patorjk.com/software/taag/
+
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:
