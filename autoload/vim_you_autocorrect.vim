@@ -2,6 +2,18 @@
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
+" Use old regexp engine. Necessary to avoid error E868 when using all the
+" equivalence classes, below.
+let s:letter_regexp = '\%#=1['
+let s:letter_regexp .= '[=a=][=b=][=c=][=d=][=e=]'
+let s:letter_regexp .= '[=f=][=g=][=h=][=i=][=j=]'
+let s:letter_regexp .= '[=k=][=l=][=m=][=n=][=o=]'
+let s:letter_regexp .= '[=p=][=q=][=r=][=s=][=t=]'
+let s:letter_regexp .= '[=u=][=v=][=w=][=x=][=y=]'
+let s:letter_regexp .= '[=z=]'
+let s:letter_regexp .= "'"
+let s:letter_regexp .= ']$'
+
 function! s:autocorrect() abort
   let edit_pos = getpos('.')
 
@@ -18,7 +30,7 @@ function! s:autocorrect() abort
 
   if strlen(line) == 0
         \ ||
-        \ (line[edit_pos[2] - 2] =~ '\W' && line[edit_pos[2] - 2] != "'")
+        \ line[:edit_pos[2] - 2] !~? s:letter_regexp
     " Jump to the error
     silent! keepjumps normal! [s
 
