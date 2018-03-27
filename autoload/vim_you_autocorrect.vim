@@ -50,6 +50,19 @@ function! s:autocorrect() abort
     "     to a mistake later in the buffer),
     " b). That the spelling mistake is within the area covered by the current
     "     insert session. We don't want to leap back to earlier mistakes.
+    "
+    " I also considered an approach where I checked if jumping back a word
+    " took us to same position as `[s`: in this way we'd only check the most
+    " recent word we typed. This doesn't work because:
+    "
+    " a). We can't use `b` because that will break for apostrophes.
+    " b). We can't use `B` because that will break for stuff-like-this.
+    "
+    " I guess I could use a backwards search using the same regular expression
+    " to find beginning of the "spell-word". This would fire correctly when we
+    " e.g. change only the second half of a word with our insert. If this
+    " weren't just a joke plugin, that should probably go on the roadmap or
+    " issues list.
     if !s:pos_same(weird_spell_pos, edit_pos)
           \ &&
           \ s:pos_before(spell_pos, edit_pos)
