@@ -33,6 +33,10 @@ function! s:autocorrect() abort
 
   let line = getline('.')
 
+  " N.B. It would probably be better just to check the last 4 bytes, but that
+  " would require doing MATHS: I'm guessing this is still pretty quick unless
+  " your line is *really* long. (I'm also not sure if that would break if the
+  " start of the last 4 bytes comes halfway through a code point.)
   if strlen(line) == 0
         \ ||
         \ line[:edit_pos[2] - 2] !~? s:letter_regexp
