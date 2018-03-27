@@ -3,7 +3,7 @@
 " Homepage: http://github.com/sedm0784/vim-you-autocorrect
 " Copyright: © 2018 Rich Cheng
 " Licence: Vim You, Autocorrect! uses the Vim licence.
-" Version: 0.1.0
+" Version: 1.0.0
 
 " Set coptions so we can use line continuation
 let s:save_cpo = &cpoptions
