@@ -11,6 +11,11 @@ let s:letter_regexp .= '[=k=][=l=][=m=][=n=][=o=]'
 let s:letter_regexp .= '[=p=][=q=][=r=][=s=][=t=]'
 let s:letter_regexp .= '[=u=][=v=][=w=][=x=][=y=]'
 let s:letter_regexp .= '[=z=]'
+" Greek/Coptic
+let s:letter_regexp .= 'Ͱ-Ͽ'
+" Cyrillic
+let s:letter_regexp .= 'Ѐ-ӿ'
+" Apostrophe!
 let s:letter_regexp .= "'"
 let s:letter_regexp .= ']$'
 
