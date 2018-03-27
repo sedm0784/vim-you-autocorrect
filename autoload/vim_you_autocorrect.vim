@@ -1,3 +1,7 @@
+" Set cpoptions so we can use line continuation
+let s:save_cpo = &cpoptions
+set cpoptions&vim
+
 function! s:autocorrect() abort
   let edit_pos = getpos('.')
 
@@ -100,3 +104,6 @@ function! vim_you_autocorrect#disable_autocorrect() abort
   endif
 endfunction
 
+" Restore user's cpoptions setting
+let &cpoptions = s:save_cpo
+unlet s:save_cpo
