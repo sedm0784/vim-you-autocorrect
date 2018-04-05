@@ -8,6 +8,8 @@ phone's autocorrect mechanism?
 
 Look no further!
 
+[![asciicast](https://asciinema.org/a/174548.png)](https://asciinema.org/a/174548)
+
 Vim You, Autocorrect, HARNESSES the power of Vim's `'spell'` option,
 AUTOMATICALLY replacing spelling mistakes and typoes as you type.
 
