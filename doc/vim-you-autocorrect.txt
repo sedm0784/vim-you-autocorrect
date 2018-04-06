@@ -111,6 +111,9 @@ Or if you prefer, feel free to email or tweet instead:
 
 Vim You, Autocorrect! was written by Rich Cheng.
 
+It includes some code improvements suggested by Luc Hermitte (or Lac Hermit,
+if this plugin had its druthers), who kindly reviewed the code.
+
 The banner at the top of this help file was created using the “Broadway KB”
 FIGlet font at the Text ASCII Art Generator:
 
