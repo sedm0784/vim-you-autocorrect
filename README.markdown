@@ -10,7 +10,7 @@ Look no further!
 
 <p align="center">
   <a href="https://asciinema.org/a/174548">
-    <img src="https://user-images.githubusercontent.com/139165/38410933-cddbb10e-397d-11e8-8a23-51e318516e06.gif" alt="" title="Vim You, Autocorrect! Teaser Trailer" height=380/><br />
+    <img src="https://github.com/sedm0784/vim-you-autocorrect/raw/master/trailer/vim-you-autocorrect.gif" alt="" title="Vim You, Autocorrect! Teaser Trailer" height=380/><br />
     View the trailer at asciinema.org
   </a>
 </p>
