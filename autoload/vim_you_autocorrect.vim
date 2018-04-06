@@ -37,7 +37,7 @@ function! s:autocorrect() abort
   " would require doing MATHS: I'm guessing this is still pretty quick unless
   " your line is *really* long. (I'm also not sure if that would break if the
   " start of the last 4 bytes comes halfway through a code point.)
-  if strlen(line) == 0
+  if empty(line)
         \ ||
         \ line[:edit_pos[2] - 2] !~? s:letter_regexp
     " Jump to the error
@@ -45,52 +45,54 @@ function! s:autocorrect() abort
 
     let spell_pos = getpos('.')
 
-    " When there is no spelling mistake, although the cursor hasn't moved, the
-    " value for `spell_pos` is still one column back from `edit_pos`. I don't
-    " really understand why this is.
-    let weird_spell_pos = [-1, 0, 0]
-    let weird_spell_pos[1] = spell_pos[1]
-    let weird_spell_pos[2] = spell_pos[2] + 1
+    try
+      " When there is no spelling mistake, although the cursor hasn't moved, the
+      " value for `spell_pos` is still one column back from `edit_pos`. I don't
+      " really understand why this is.
+      let weird_spell_pos = [-1, 0, 0]
+      let weird_spell_pos[1] = spell_pos[1]
+      let weird_spell_pos[2] = spell_pos[2] + 1
 
-    " Check:
-    "
-    " a). That a spelling mistake exists (i.e. if the cursor moved),
-    " a). That the spelling mistake is behind us (we might have wrapped around
-    "     to a mistake later in the buffer),
-    " b). That the spelling mistake is within the area covered by the current
-    "     insert session. We don't want to leap back to earlier mistakes.
-    "
-    " I also considered an approach where I checked if jumping back a word
-    " took us to same position as `[s`: in this way we'd only check the most
-    " recent word we typed. This doesn't work because:
-    "
-    " a). We can't use `b` because that will break for apostrophes.
-    " b). We can't use `B` because that will break for stuff-like-this.
-    "
-    " I guess I could use a backwards search using the same regular expression
-    " to find beginning of the "spell-word". This would fire correctly when we
-    " e.g. change only the second half of a word with our insert. If this
-    " weren't just a joke plugin, that should probably go on the roadmap or
-    " issues list.
-    if !s:pos_same(weird_spell_pos, edit_pos)
-          \ &&
-          \ s:pos_before(spell_pos, edit_pos)
-          \ &&
-          \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
-      let old_length = strlen(getline('.'))
+      " Check:
+      "
+      " a). That a spelling mistake exists (i.e. if the cursor moved),
+      " a). That the spelling mistake is behind us (we might have wrapped around
+      "     to a mistake later in the buffer),
+      " b). That the spelling mistake is within the area covered by the current
+      "     insert session. We don't want to leap back to earlier mistakes.
+      "
+      " I also considered an approach where I checked if jumping back a word
+      " took us to same position as `[s`: in this way we'd only check the most
+      " recent word we typed. This doesn't work because:
+      "
+      " a). We can't use `b` because that will break for apostrophes.
+      " b). We can't use `B` because that will break for stuff-like-this.
+      "
+      " I guess I could use a backwards search using the same regular expression
+      " to find beginning of the "spell-word". This would fire correctly when we
+      " e.g. change only the second half of a word with our insert. If this
+      " weren't just a joke plugin, that should probably go on the roadmap or
+      " issues list.
+      if !s:pos_same(weird_spell_pos, edit_pos)
+            \ &&
+            \ s:pos_before(spell_pos, edit_pos)
+            \ &&
+            \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
+        let old_length = strlen(getline('.'))
 
-      " Correct the error.
-      keepjumps normal! z=1<CR>
+        " Correct the error.
+        keepjumps normal! z=1<CR>
 
-      " Adjust cursor position if the replacement is a different length and is
-      " on same line as us.
-      if edit_pos[1] == spell_pos[1]
-        let edit_pos[2] = edit_pos[2] + strlen(getline('.')) - old_length
+        " Adjust cursor position if the replacement is a different length and is
+        " on same line as us.
+        if edit_pos[1] == spell_pos[1]
+          let edit_pos[2] = edit_pos[2] + strlen(getline('.')) - old_length
+        endif
       endif
-    endif
-
-    " Reset the cursor position.
-    silent! keepjumps call setpos('.', edit_pos)
+    finally
+      " Reset the cursor position.
+      silent! keepjumps call setpos('.', edit_pos)
+    endtry
   endif
 endfunction
 
@@ -130,11 +132,9 @@ function! vim_you_autocorrect#disable_autocorrect() abort
   " when it's already disabled: use `silent!`
   silent! call <SID>remove_autocommands()
 
-  " Restore 'spell'
-  if exists('w:vim_you_autocorrect_spell')
-    if !w:vim_you_autocorrect_spell
-      setlocal nospell
-    endif
+  " Restore 'spell' if we saved a value before and it was negative
+  if !get(w:, 'vim_you_autocorrect_spell', 1)
+    setlocal nospell
   endif
 endfunction
 
