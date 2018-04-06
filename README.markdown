@@ -8,7 +8,12 @@ phone's autocorrect mechanism?
 
 Look no further!
 
-[![asciicast](https://asciinema.org/a/174548.png)](https://asciinema.org/a/174548)
+<p align="center">
+  <a href="https://asciinema.org/a/174548">
+    <img src="https://user-images.githubusercontent.com/139165/38410933-cddbb10e-397d-11e8-8a23-51e318516e06.gif" alt="" title="Vim You, Autocorrect! Teaser Trailer" height=380/><br />
+    View the trailer at asciinema.org
+  </a>
+</p>
 
 Vim You, Autocorrect, HARNESSES the power of Vim's `'spell'` option,
 AUTOMATICALLY replacing spelling mistakes and typoes as you type.
