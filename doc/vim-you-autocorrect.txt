@@ -35,7 +35,7 @@ CONTENTS                                                *autocorrect-contents*
 
 Vim You, Autocorrect! releases you from the DRUDGERY of having to correct your
 spelling mistakes and typos by automatically accepting Vim's suggestions for
-each miss-spelled word as you type.
+each misspelled word as you type.
 
 ==============================================================================
 2. Usage                                                   *autocorrect-usage*
