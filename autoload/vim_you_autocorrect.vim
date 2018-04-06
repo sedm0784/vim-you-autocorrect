@@ -117,8 +117,11 @@ endfunction
 function! vim_you_autocorrect#enable_autocorrect() abort
   " Save 'spell'
   " FIXME: 'spell' is window local, but the autocommands are buffer local.
-  let w:vim_you_autocorrect_spell = &spell
-  setlocal spell
+  if !&spell
+    " We'll need to unset spell when we disable the plugin
+    let w:vim_you_autocorrect_reset_spell = 1
+    setlocal spell
+  endif
 
   silent! call <SID>remove_autocommands()
   augroup vim_you_autocorrect
@@ -132,8 +135,9 @@ function! vim_you_autocorrect#disable_autocorrect() abort
   " when it's already disabled: use `silent!`
   silent! call <SID>remove_autocommands()
 
-  " Restore 'spell' if we saved a value before and it was negative
-  if !get(w:, 'vim_you_autocorrect_spell', 1)
+  " Unset spell if we set it
+  if exists('w:vim_you_autocorrect_reset_spell')
+    unlet w:vim_you_autocorrect_reset_spell
     setlocal nospell
   endif
 endfunction
