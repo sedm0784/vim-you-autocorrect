@@ -2,9 +2,9 @@
 
 *Why should smartphones get all the fun?*
 
-Find Vim's commands for correcting spelling mistakes UNWIELDLY? Long for a
+Find Vim&rsquo;s commands for correcting spelling mistakes UNWIELDLY? Long for a
 solution that approaches the EASE-OF-USE and FOOLPROOF SOPHISTICATION of your
-phone's autocorrect mechanism?
+phone&rsquo;s autocorrect mechanism?
 
 Look no further!
 
@@ -15,7 +15,7 @@ Look no further!
   </a>
 </p>
 
-Vim You, Autocorrect, HARNESSES the power of Vim's `'spell'` option,
+Vim You, Autocorrect! HARNESSES the power of Vim&rsquo;s `'spell'` option,
 AUTOMATICALLY replacing spelling mistakes and typos as you type.
 
 Just install in the usual way&#8202;&mdash;&#8202;manually or with your
