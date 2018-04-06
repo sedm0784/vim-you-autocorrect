@@ -16,7 +16,7 @@ Look no further!
 </p>
 
 Vim You, Autocorrect, HARNESSES the power of Vim's `'spell'` option,
-AUTOMATICALLY replacing spelling mistakes and typoes as you type.
+AUTOMATICALLY replacing spelling mistakes and typos as you type.
 
 Just install in the usual way&#8202;&mdash;&#8202;manually or with your
 favourite plugin manager&#8202;&mdash;&#8202;and marvel at the BLEMISH-FREE
