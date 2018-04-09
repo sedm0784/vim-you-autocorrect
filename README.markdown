@@ -9,7 +9,7 @@ phone&rsquo;s autocorrect mechanism?
 Look no further!
 
 <p align="center">
-  <a href="https://asciinema.org/a/174548">
+  <a href="https://asciinema.org/a/175142">
     <img src="https://github.com/sedm0784/vim-you-autocorrect/raw/master/trailer/vim-you-autocorrect.gif" alt="" title="Vim You, Autocorrect! Teaser Trailer" height=380/><br />
     View the trailer at asciinema.org
   </a>
