@@ -72,7 +72,7 @@ does something like the following:
 
    1. As you finish typing each word, Vim You, Autocorrect! issues a   `[s`
       motion command,
-   2. If a spelling error is detected, Vim You, Autocorrect! issues a   `z=1`
+   2. If a spelling error is detected, Vim You, Autocorrect! issues a   `1z=`
       command to accept the first spelling suggestion.
 
 ==============================================================================

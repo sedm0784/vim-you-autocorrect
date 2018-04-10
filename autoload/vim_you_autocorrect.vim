@@ -81,7 +81,7 @@ function! s:autocorrect() abort
         let old_length = strlen(getline('.'))
 
         " Correct the error.
-        keepjumps normal! z=1<CR>
+        keepjumps normal! 1z=
 
         " Adjust cursor position if the replacement is a different length and is
         " on same line as us.
