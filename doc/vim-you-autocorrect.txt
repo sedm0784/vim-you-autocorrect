@@ -54,7 +54,7 @@ never have to worry about spelling errors again!
 >
                augroup ILoveCorrections
                  autocmd!
-                 autocmd BufNewFile,BufRead * EnableAutocorrect
+                 autocmd BufEnter * EnableAutocorrect
                augroup END
 <
 
