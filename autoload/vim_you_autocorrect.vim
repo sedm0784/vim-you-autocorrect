@@ -56,9 +56,9 @@ function! s:autocorrect() abort
       " Check:
       "
       " a). That a spelling mistake exists (i.e. if the cursor moved),
-      " a). That the spelling mistake is behind us (we might have wrapped around
+      " b). That the spelling mistake is behind us (we might have wrapped around
       "     to a mistake later in the buffer),
-      " b). That the spelling mistake is within the area covered by the current
+      " c). That the spelling mistake is within the area covered by the current
       "     insert session. We don't want to leap back to earlier mistakes.
       "
       " I also considered an approach where I checked if jumping back a word
