@@ -6,7 +6,7 @@
       Copyright:  © 2018 Rich Cheng
         Licence:  Vim You, Autocorrect! uses the same licence as Vim. (See
                   |license|.)
-        Version:  1.0.0
+        Version:  1.0.1
 
 ==============================================================================
      _      _   _          _     ___   _                                   ~
@@ -78,6 +78,7 @@ does something like the following:
 ==============================================================================
 4. Changelog                                           *autocorrect-changelog*
 
+Version 1.0.1 - Use   `1z=`   instead of   `z=1<CR>`   . Minor updates to :help.
 Version 1.0.0 - Vim You, Autocorrect! released
 
 ==============================================================================
