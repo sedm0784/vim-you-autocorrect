@@ -237,6 +237,7 @@ function! vim_you_autocorrect#undo_last() abort
 
         let edit_pos[2] += adjustment
         silent! call setpos('.', edit_pos)
+        call s:clear_highlight()
       endif
     endif
 
