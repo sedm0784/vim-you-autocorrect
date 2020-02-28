@@ -80,13 +80,26 @@ function! s:autocorrect() abort
             \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
         let old_length = strlen(getline('.'))
 
+        if (edit_pos[1] == spell_pos[1])
+          let w:vim_you_autocorrect_before_correction = getline('.')[spell_pos[2] - 1:edit_pos[2] - 3]
+        else
+          " FIXME: Implement! Easy enough if the user just pressed <CR> but
+          " what if the spelling error isn't at the end of the line?
+        endif
+
         " Correct the error.
         keepjumps normal! 1z=
 
-        " Adjust cursor position if the replacement is a different length and is
-        " on same line as us.
+        let w:vim_you_autocorrect_last_pos = spell_pos
+
         if edit_pos[1] == spell_pos[1]
+          " Adjust cursor position if the replacement is a different length
+          " and is on same line as us.
           let edit_pos[2] = edit_pos[2] + strlen(getline('.')) - old_length
+
+          let w:vim_you_autocorrect_after_correction = getline('.')[spell_pos[2] - 1:edit_pos[2] - 3]
+        else
+          " FIXME: Implement!
         endif
       endif
     finally
@@ -139,6 +152,76 @@ function! vim_you_autocorrect#disable_autocorrect() abort
   if exists('w:vim_you_autocorrect_reset_spell')
     unlet w:vim_you_autocorrect_reset_spell
     setlocal nospell
+  endif
+endfunction
+
+" This gets the line, and the start and end positions of the word that was
+" substituted in when making the correction.
+function! s:get_line_and_positions() abort
+  let corrected_line = getline(w:vim_you_autocorrect_last_pos[1])
+  let sp = w:vim_you_autocorrect_last_pos[2] - 1
+  let ep = sp + strlen(w:vim_you_autocorrect_after_correction)
+
+  return [corrected_line, sp, ep]
+endfunction
+
+function! vim_you_autocorrect#undo_last() abort
+  if exists('w:vim_you_autocorrect_last_pos')
+    let [corrected_line, sp, ep] = s:get_line_and_positions()
+
+    " Only undo if the correction hasn't been changed subsequently
+    if corrected_line[sp:ep - 1] ==# w:vim_you_autocorrect_after_correction
+      let edit_pos = getpos('.')
+
+      if sp > 0
+        let line_before = corrected_line[:sp - 1]
+      else
+        let line_before = ''
+      endif
+      let line_after = corrected_line[ep:]
+
+      call setline(w:vim_you_autocorrect_last_pos[1],
+            \ line_before .
+            \ w:vim_you_autocorrect_before_correction .
+            \ line_after)
+
+      if edit_pos[1] == w:vim_you_autocorrect_last_pos[1]
+            \ && edit_pos[2] >
+            \      w:vim_you_autocorrect_last_pos[2] +
+            \      strlen(w:vim_you_autocorrect_before_correction)
+        " N.B. Don't really care what happens to cursor if it's between the
+        "      end before and the end after the correction. There's no obvious
+        "      "right" answer. Therefore arbitrarily selecting the "before"
+        "      end. Could also have used the "after" or the max or the min.
+
+        " Adjust the cursor position to account for changes in length.
+        "
+        " N.B. We're adjusting the position of the cursor correctly here, but
+        "      marks on the line won't move. In particular, the `` mark isn't
+        "      moved correctly, so you can't jump back to the correct position
+        "      in e.g. a mapping.
+        let adjustment = strlen(w:vim_you_autocorrect_before_correction) -
+              \ strlen(w:vim_you_autocorrect_after_correction)
+
+        let edit_pos[2] += adjustment
+        silent! call setpos('.', edit_pos)
+      endif
+    endif
+  endif
+endfunction
+
+function! vim_you_autocorrect#jump_to_last() abort
+  if exists('w:vim_you_autocorrect_last_pos')
+    let [corrected_line, sp, ep] = s:get_line_and_positions()
+
+    " Only move if the correction hasn't been changed subsequently
+    if corrected_line[sp:ep - 1] ==# w:vim_you_autocorrect_after_correction
+      " Add current position to the jumplist
+      normal! m'
+
+      " And jump
+      silent! call setpos('.', w:vim_you_autocorrect_last_pos)
+    endif
   endif
 endfunction
 
