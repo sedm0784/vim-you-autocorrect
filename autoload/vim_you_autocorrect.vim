@@ -173,6 +173,8 @@ function! vim_you_autocorrect#enable_autocorrect() abort
     autocmd InsertEnter <buffer> call <SID>reset_start_pos()
     autocmd CursorMovedI <buffer> call <SID>autocorrect()
   augroup END
+
+  highlight link AutocorrectGood SpellBad
 endfunction
 
 function! vim_you_autocorrect#disable_autocorrect() abort

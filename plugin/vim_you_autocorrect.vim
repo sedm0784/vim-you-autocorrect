@@ -29,8 +29,6 @@ command DisableAutocorrect call vim_you_autocorrect#disable_autocorrect()
 nnoremap <silent> <Plug>VimyouautocorrectUndo :call vim_you_autocorrect#undo_last()<CR>
 nnoremap <silent> <Plug>VimyouautocorrectJump :call vim_you_autocorrect#jump_to_last()<CR>
 
-highlight link AutocorrectGood SpellBad
-
 " Restore user's cpoptions setting
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
