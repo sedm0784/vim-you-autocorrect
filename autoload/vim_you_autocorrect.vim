@@ -100,6 +100,8 @@ function! s:autocorrect() abort
         " Correct the error.
         keepjumps normal! 1z=
 
+        call s:clear_highlight()
+
         if edit_pos[1] == spell_pos[1]
           " Adjust cursor position if the replacement is a different length
           " and is on same line as us.
@@ -113,11 +115,29 @@ function! s:autocorrect() abort
           unlet w:vim_you_autocorrect_after_correction
           unlet w:vim_you_autocorrect_last_pos
         endif
+          call s:highlight_correction(spell_pos)
       endif
     finally
       " Reset the cursor position.
       silent! call setpos('.', edit_pos)
     endtry
+  endif
+endfunction
+
+function! s:highlight_correction(spell_pos)
+  if exists('w:vim_you_autocorrect_after_correction')
+    let s:match_id = matchadd('AutocorrectGood', '\v%'
+          \ . a:spell_pos[1] . 'l%'
+          \ . a:spell_pos[2] . 'c' . repeat('.', len(w:vim_you_autocorrect_after_correction)))
+    call timer_start(10000, {timer_id -> s:clear_highlight()})
+  endif
+endfunction
+
+" Clear the match of the autocorrected word
+function! s:clear_highlight()
+  if exists('s:match_id')
+    call matchdelete(s:match_id)
+    unlet s:match_id
   endif
 endfunction
 
