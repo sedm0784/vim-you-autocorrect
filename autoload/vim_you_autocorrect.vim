@@ -91,7 +91,7 @@ function! s:autocorrect() abort
       endif
     finally
       " Reset the cursor position.
-      silent! keepjumps call setpos('.', edit_pos)
+      silent! call setpos('.', edit_pos)
     endtry
   endif
 endfunction
