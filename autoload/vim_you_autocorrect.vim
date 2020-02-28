@@ -80,11 +80,17 @@ function! s:autocorrect() abort
             \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
         let old_length = strlen(getline('.'))
 
-        if (edit_pos[1] == spell_pos[1])
+        " Save the original spelling of the most recent autocorrection so we
+        " can revert it
+        if edit_pos[1] == spell_pos[1]
           let w:vim_you_autocorrect_before_correction = getline('.')[spell_pos[2] - 1:edit_pos[2] - 3]
+        elseif edit_pos[1] == spell_pos[1] + 1
+          " FIXME: Is it possible that the spelling error isn't at the end of
+          "        the line? How?
+          let w:vim_you_autocorrect_before_correction = getline('.')[spell_pos[2] - 1:]
         else
-          " FIXME: Implement! Easy enough if the user just pressed <CR> but
-          " what if the spelling error isn't at the end of the line?
+          " FIXME: The spelling error isn't on this line or at the end of the
+          "        previous line. How did this happen?
         endif
 
         " Correct the error.
@@ -98,8 +104,10 @@ function! s:autocorrect() abort
           let edit_pos[2] = edit_pos[2] + strlen(getline('.')) - old_length
 
           let w:vim_you_autocorrect_after_correction = getline('.')[spell_pos[2] - 1:edit_pos[2] - 3]
+        elseif edit_pos[1] == spell_pos[1] + 1
+          let w:vim_you_autocorrect_after_correction = getline('.')[spell_pos[2] - 1:]
         else
-          " FIXME: Implement!
+          " FIXME: ???
         endif
       endif
     finally
