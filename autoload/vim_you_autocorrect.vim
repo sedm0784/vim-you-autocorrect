@@ -80,6 +80,8 @@ function! s:autocorrect() abort
             \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
         let old_length = strlen(getline('.'))
 
+        let w:vim_you_autocorrect_last_pos = spell_pos
+
         " Save the original spelling of the most recent autocorrection so we
         " can revert it
         if edit_pos[1] == spell_pos[1]
@@ -91,12 +93,12 @@ function! s:autocorrect() abort
         else
           " FIXME: The spelling error isn't on this line or at the end of the
           "        previous line. How did this happen?
+          unlet w:vim_you_autocorrect_before_correction
+          unlet w:vim_you_autocorrect_last_pos
         endif
 
         " Correct the error.
         keepjumps normal! 1z=
-
-        let w:vim_you_autocorrect_last_pos = spell_pos
 
         if edit_pos[1] == spell_pos[1]
           " Adjust cursor position if the replacement is a different length
@@ -107,7 +109,9 @@ function! s:autocorrect() abort
         elseif edit_pos[1] == spell_pos[1] + 1
           let w:vim_you_autocorrect_after_correction = getline('.')[spell_pos[2] - 1:]
         else
-          " FIXME: ???
+          " FIXME: How did we get in here?
+          unlet w:vim_you_autocorrect_after_correction
+          unlet w:vim_you_autocorrect_last_pos
         endif
       endif
     finally
@@ -215,6 +219,8 @@ function! vim_you_autocorrect#undo_last() abort
         silent! call setpos('.', edit_pos)
       endif
     endif
+
+    unlet w:vim_you_autocorrect_last_pos
   endif
 endfunction
 
