@@ -78,50 +78,55 @@ function! s:autocorrect() abort
             \ s:pos_before(spell_pos, edit_pos)
             \ &&
             \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
-        let old_length = strlen(getline('.'))
-
-        let w:vim_you_autocorrect_last_pos = spell_pos
-
-        " Save the original spelling of the most recent autocorrection so we
-        " can revert it
-        if edit_pos[1] == spell_pos[1]
-          let w:vim_you_autocorrect_before_correction = getline('.')[spell_pos[2] - 1:edit_pos[2] - 3]
-        elseif edit_pos[1] == spell_pos[1] + 1
-          " FIXME: Is it possible that the spelling error isn't at the end of
-          "        the line? How?
-          let w:vim_you_autocorrect_before_correction = getline('.')[spell_pos[2] - 1:]
-        else
-          " FIXME: The spelling error isn't on this line or at the end of the
-          "        previous line. How did this happen?
-          unlet w:vim_you_autocorrect_before_correction
-          unlet w:vim_you_autocorrect_last_pos
-        endif
-
-        " Correct the error.
-        keepjumps normal! 1z=
-
-        call s:clear_highlight()
-
-        if edit_pos[1] == spell_pos[1]
-          " Adjust cursor position if the replacement is a different length
-          " and is on same line as us.
-          let edit_pos[2] = edit_pos[2] + strlen(getline('.')) - old_length
-
-          let w:vim_you_autocorrect_after_correction = getline('.')[spell_pos[2] - 1:edit_pos[2] - 3]
-        elseif edit_pos[1] == spell_pos[1] + 1
-          let w:vim_you_autocorrect_after_correction = getline('.')[spell_pos[2] - 1:]
-        else
-          " FIXME: How did we get in here?
-          unlet w:vim_you_autocorrect_after_correction
-          unlet w:vim_you_autocorrect_last_pos
-        endif
-          call s:highlight_correction(spell_pos)
+        call s:correct_error(spell_pos, edit_pos)
       endif
     finally
       " Reset the cursor position.
       silent! call setpos('.', edit_pos)
     endtry
   endif
+endfunction
+
+function! s:correct_error(spell_pos, edit_pos)
+  let old_length = strlen(getline('.'))
+
+  " FIXME: Why am I using window variables and not buffer variables?
+  let w:vim_you_autocorrect_last_pos = a:spell_pos
+
+  " Save the original spelling of the most recent autocorrection so we
+  " can revert it
+  if a:edit_pos[1] == a:spell_pos[1]
+    let w:vim_you_autocorrect_before_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 3]
+  elseif a:edit_pos[1] == a:spell_pos[1] + 1
+    " FIXME: Is it possible that the spelling error isn't at the end of
+    "        the line? How?
+    let w:vim_you_autocorrect_before_correction = getline('.')[a:spell_pos[2] - 1:]
+  else
+    " FIXME: The spelling error isn't on this line or at the end of the
+    "        previous line. How did this happen?
+    unlet w:vim_you_autocorrect_before_correction
+    unlet w:vim_you_autocorrect_last_pos
+  endif
+
+  " Correct the error.
+  keepjumps normal! 1z=
+
+  call s:clear_highlight()
+
+  if a:edit_pos[1] == a:spell_pos[1]
+    " Adjust cursor position if the replacement is a different length
+    " and is on same line as us.
+    let a:edit_pos[2] = a:edit_pos[2] + strlen(getline('.')) - old_length
+
+    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 3]
+  elseif a:edit_pos[1] == a:spell_pos[1] + 1
+    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:]
+  else
+    " FIXME: How did we get in here?
+    unlet w:vim_you_autocorrect_after_correction
+    unlet w:vim_you_autocorrect_last_pos
+  endif
+  call s:highlight_correction(a:spell_pos)
 endfunction
 
 function! s:highlight_correction(spell_pos)
