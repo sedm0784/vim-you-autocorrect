@@ -311,7 +311,7 @@ function! s:bump_correction(direction) abort
 
       let w:vim_you_autocorrect_correct_count += a:direction
       if w:vim_you_autocorrect_correct_count < 1
-        w:vim_you_autocorrect_correct_count = 1
+        let w:vim_you_autocorrect_correct_count = 1
       endif
 
       let correction_edit_pos = w:vim_you_autocorrect_last_edit_pos
