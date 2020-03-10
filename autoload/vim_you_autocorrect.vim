@@ -151,8 +151,6 @@ function! s:correct_error(spell_pos, edit_pos, index)
   " Correct the error.
   execute 'keepjumps normal!'  a:index . 'z='
 
-  call s:clear_highlight()
-
   let position_adjustment = 0
 
   if a:edit_pos[1] == a:spell_pos[1]
@@ -180,16 +178,26 @@ endfunction
 " ****************
 
 function! s:highlight_correction(spell_pos)
+  " Clear any existing highlight (and timer)
+  call s:clear_highlight()
+
+  " Highlight
   if exists('w:vim_you_autocorrect_after_correction')
     let s:match_id = matchadd('AutocorrectGood', '\v%'
           \ . a:spell_pos[1] . 'l%'
           \ . a:spell_pos[2] . 'c' . repeat('.', len(w:vim_you_autocorrect_after_correction)))
-    call timer_start(10000, {timer_id -> s:clear_highlight()})
+    let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
   endif
 endfunction
 
 " Clear the match of the autocorrected word
 function! s:clear_highlight()
+  " Cancel any existing timer
+  if exists('s:timer_id')
+    call timer_stop(s:timer_id)
+  endif
+
+  " Clear the highlight
   if exists('s:match_id')
     call matchdelete(s:match_id)
     unlet s:match_id
