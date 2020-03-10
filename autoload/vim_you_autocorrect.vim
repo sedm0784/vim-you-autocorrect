@@ -135,6 +135,8 @@ function! s:correct_error(spell_pos, edit_pos, index)
     unlet w:vim_you_autocorrect_last_pos
   endif
   call s:highlight_correction(a:spell_pos)
+
+  return position_adjustment
 endfunction
 
 function! s:highlight_correction(spell_pos)
