@@ -82,8 +82,8 @@ function! s:autocorrect() abort
         " Reset correction index
         let w:vim_you_autocorrect_correct_count = 1
 
-        let position_adjustment = s:correct_error(spell_pos, edit_pos, 1)
-        let edit_pos[2] += position_adjustment
+        let adjustment = s:correct_error(spell_pos, edit_pos, 1)
+        call s:update_position(edit_pos, spell_pos, len(w:vim_you_autocorrect_before_correction), adjustment)
       endif
     finally
       " Reset the cursor position.
@@ -214,7 +214,9 @@ function! s:get_line_and_positions() abort
   return [corrected_line, sp, ep]
 endfunction
 
-function! vim_you_autocorrect#undo_last() abort
+function! s:undo_last() abort
+  let adjustment = 0
+
   if exists('w:vim_you_autocorrect_last_pos')
     let [corrected_line, sp, ep] = s:get_line_and_positions()
 
@@ -234,30 +236,32 @@ function! vim_you_autocorrect#undo_last() abort
             \ w:vim_you_autocorrect_before_correction .
             \ line_after)
 
-      if edit_pos[1] == w:vim_you_autocorrect_last_pos[1]
-            \ && edit_pos[2] >
-            \      w:vim_you_autocorrect_last_pos[2] +
-            \      strlen(w:vim_you_autocorrect_before_correction)
-        " N.B. Don't really care what happens to cursor if it's between the
-        "      end before and the end after the correction. There's no obvious
-        "      "right" answer. Therefore arbitrarily selecting the "before"
-        "      end. Could also have used the "after" or the max or the min.
+      let adjustment = strlen(w:vim_you_autocorrect_before_correction) -
+            \ strlen(w:vim_you_autocorrect_after_correction)
 
-        " Adjust the cursor position to account for changes in length.
-        "
-        " N.B. We're adjusting the position of the cursor correctly here, but
-        "      marks on the line won't move. In particular, the `` mark isn't
-        "      moved correctly, so you can't jump back to the correct position
-        "      in e.g. a mapping.
-        let adjustment = strlen(w:vim_you_autocorrect_before_correction) -
-              \ strlen(w:vim_you_autocorrect_after_correction)
-
-        let edit_pos[2] += adjustment
-        silent! call setpos('.', edit_pos)
-        call s:clear_highlight()
-      endif
+      call s:clear_highlight()
     endif
+  endif
 
+  return adjustment
+endfunction
+
+function! vim_you_autocorrect#undo_last() abort
+  let length_before_change = len(w:vim_you_autocorrect_after_correction)
+  let adjustment = s:undo_last()
+
+  " Adjust the cursor position to account for changes in length.
+  "
+  " N.B. We're adjusting the position of the cursor correctly here, but
+  "      marks on the line won't move. In particular, the `` mark isn't
+  "      moved correctly, so you can't jump back to the correct position
+  "      in e.g. a mapping.
+  let edit_pos = getpos('.')
+  if s:update_position(edit_pos, w:vim_you_autocorrect_last_pos, length_before_change, adjustment)
+    silent! call setpos('.', edit_pos)
+  endif
+
+  if exists('w:vim_you_autocorrect_last_pos')
     unlet w:vim_you_autocorrect_last_pos
   endif
 endfunction
@@ -289,22 +293,38 @@ function! vim_you_autocorrect#previous() abort
   call s:bump_correction(-1)
 endfunction
 
+" Returns whether or not it changed pos
+" N.B. Don't really care what happens to cursor if it's between the
+"      end before and the end after the change. There's no obvious
+"      "right" answer. Therefore arbitrarily selecting the "before"
+"      end. Could also have used the "after" or the max or the min.
+"
+function! s:update_position(pos, correction_pos, length_before_change, adjustment)
+  if a:adjustment != 0
+        \ && a:pos[1] == a:correction_pos[1]
+        \ && a:pos[2] > a:correction_pos[2] + a:length_before_change
+    let a:pos[2] = a:pos[2] + a:adjustment
+    return 1
+  endif
+
+  return 0
+endfunction
+
 function! s:bump_correction(direction) abort
   let edit_pos = getpos('.')
   if exists('w:vim_you_autocorrect_last_pos')
     try
-      " Make a note of the position of the spelling error, as we'll override
-      " the variable while undoing correction
-      let last_pos = w:vim_you_autocorrect_last_pos
-
       " Undo the correction
-      call vim_you_autocorrect#undo_last()
+      let length_before_change = len(w:vim_you_autocorrect_after_correction)
+      let adjustment = s:undo_last()
 
-      " undo_last updates the cursor position, but not our edit_pos variable.
-      " Update this now.
-      let edit_pos = getpos('.')
+      " Update edit_pos and the cursor
+      if s:update_position(edit_pos, w:vim_you_autocorrect_last_pos, length_before_change, adjustment)
+        silent! call setpos('.', edit_pos)
+      endif
 
-      let w:vim_you_autocorrect_last_pos = last_pos
+      " We also need to update last_edit_pos to account for the undo
+      call s:update_position(w:vim_you_autocorrect_last_edit_pos, w:vim_you_autocorrect_last_pos, length_before_change, adjustment)
 
       " Jump back to the error
       call s:jump_to_last(1)
@@ -316,10 +336,10 @@ function! s:bump_correction(direction) abort
 
       let correction_edit_pos = w:vim_you_autocorrect_last_edit_pos
 
-      let position_adjustment = s:correct_error(w:vim_you_autocorrect_last_pos,
+      let adjustment = s:correct_error(w:vim_you_autocorrect_last_pos,
             \ correction_edit_pos,
             \ w:vim_you_autocorrect_correct_count)
-      let edit_pos[2] += position_adjustment
+      call s:update_position(edit_pos, w:vim_you_autocorrect_last_pos, len(w:vim_you_autocorrect_before_correction), adjustment)
     finally
       " Reset the cursor position.
       silent! call setpos('.', edit_pos)
