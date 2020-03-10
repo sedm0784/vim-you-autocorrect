@@ -78,7 +78,12 @@ function! s:autocorrect() abort
             \ s:pos_before(spell_pos, edit_pos)
             \ &&
             \ (s:pos_before(s:start_pos, spell_pos) || s:pos_same(s:start_pos, spell_pos))
-        call s:correct_error(spell_pos, edit_pos)
+
+        " Reset correction index
+        let w:vim_you_autocorrect_correct_count = 1
+
+        let position_adjustment = s:correct_error(spell_pos, edit_pos, 1)
+        let edit_pos[2] += position_adjustment
       endif
     finally
       " Reset the cursor position.
@@ -87,11 +92,12 @@ function! s:autocorrect() abort
   endif
 endfunction
 
-function! s:correct_error(spell_pos, edit_pos)
+function! s:correct_error(spell_pos, edit_pos, index)
   let old_length = strlen(getline('.'))
 
   " FIXME: Why am I using window variables and not buffer variables?
   let w:vim_you_autocorrect_last_pos = a:spell_pos
+  let w:vim_you_autocorrect_last_edit_pos = a:edit_pos
 
   " Save the original spelling of the most recent autocorrection so we
   " can revert it
@@ -109,16 +115,18 @@ function! s:correct_error(spell_pos, edit_pos)
   endif
 
   " Correct the error.
-  keepjumps normal! 1z=
+  execute 'keepjumps normal!'  a:index . 'z='
 
   call s:clear_highlight()
+
+  let position_adjustment = 0
 
   if a:edit_pos[1] == a:spell_pos[1]
     " Adjust cursor position if the replacement is a different length
     " and is on same line as us.
-    let a:edit_pos[2] = a:edit_pos[2] + strlen(getline('.')) - old_length
+    let position_adjustment = strlen(getline('.')) - old_length
 
-    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 3]
+    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 3 + position_adjustment]
   elseif a:edit_pos[1] == a:spell_pos[1] + 1
     let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:]
   else
@@ -252,18 +260,68 @@ function! vim_you_autocorrect#undo_last() abort
   endif
 endfunction
 
-function! vim_you_autocorrect#jump_to_last() abort
+function! s:jump_to_last(force_jump) abort
   if exists('w:vim_you_autocorrect_last_pos')
     let [corrected_line, sp, ep] = s:get_line_and_positions()
 
     " Only move if the correction hasn't been changed subsequently
-    if corrected_line[sp:ep - 1] ==# w:vim_you_autocorrect_after_correction
+    if a:force_jump || corrected_line[sp:ep - 1] ==# w:vim_you_autocorrect_after_correction
       " Add current position to the jumplist
       normal! m'
 
       " And jump
       silent! call setpos('.', w:vim_you_autocorrect_last_pos)
     endif
+  endif
+endfunction
+
+function! vim_you_autocorrect#jump_to_last() abort
+  call s:jump_to_last(0)
+endfunction
+
+function! vim_you_autocorrect#next() abort
+  call s:bump_correction(1)
+endfunction
+
+function! vim_you_autocorrect#previous() abort
+  call s:bump_correction(-1)
+endfunction
+
+function! s:bump_correction(direction) abort
+  let edit_pos = getpos('.')
+  if exists('w:vim_you_autocorrect_last_pos')
+    try
+      " Make a note of the position of the spelling error, as we'll override
+      " the variable while undoing correction
+      let last_pos = w:vim_you_autocorrect_last_pos
+
+      " Undo the correction
+      call vim_you_autocorrect#undo_last()
+
+      " undo_last updates the cursor position, but not our edit_pos variable.
+      " Update this now.
+      let edit_pos = getpos('.')
+
+      let w:vim_you_autocorrect_last_pos = last_pos
+
+      " Jump back to the error
+      call s:jump_to_last(1)
+
+      let w:vim_you_autocorrect_correct_count += a:direction
+      if w:vim_you_autocorrect_correct_count < 1
+        w:vim_you_autocorrect_correct_count = 1
+      endif
+
+      let correction_edit_pos = w:vim_you_autocorrect_last_edit_pos
+
+      let position_adjustment = s:correct_error(w:vim_you_autocorrect_last_pos,
+            \ correction_edit_pos,
+            \ w:vim_you_autocorrect_correct_count)
+      let edit_pos[2] += position_adjustment
+    finally
+      " Reset the cursor position.
+      silent! call setpos('.', edit_pos)
+    endtry
   endif
 endfunction
 
