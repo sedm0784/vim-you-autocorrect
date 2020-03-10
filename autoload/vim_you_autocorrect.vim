@@ -96,8 +96,8 @@ function! s:correct_error(spell_pos, edit_pos, index)
   let old_length = strlen(getline('.'))
 
   " FIXME: Why am I using window variables and not buffer variables?
-  let w:vim_you_autocorrect_last_pos = a:spell_pos
-  let w:vim_you_autocorrect_last_edit_pos = a:edit_pos
+  let w:vim_you_autocorrect_last_pos = copy(a:spell_pos)
+  let w:vim_you_autocorrect_last_edit_pos = copy(a:edit_pos)
 
   " Save the original spelling of the most recent autocorrection so we
   " can revert it
@@ -323,9 +323,6 @@ function! s:bump_correction(direction) abort
         silent! call setpos('.', edit_pos)
       endif
 
-      " We also need to update last_edit_pos to account for the undo
-      call s:update_position(w:vim_you_autocorrect_last_edit_pos, w:vim_you_autocorrect_last_pos, length_before_change, adjustment)
-
       " Jump back to the error
       call s:jump_to_last(1)
 
@@ -334,10 +331,8 @@ function! s:bump_correction(direction) abort
         let w:vim_you_autocorrect_correct_count = 1
       endif
 
-      let correction_edit_pos = w:vim_you_autocorrect_last_edit_pos
-
       let adjustment = s:correct_error(w:vim_you_autocorrect_last_pos,
-            \ correction_edit_pos,
+            \ w:vim_you_autocorrect_last_edit_pos,
             \ w:vim_you_autocorrect_correct_count)
       call s:update_position(edit_pos, w:vim_you_autocorrect_last_pos, len(w:vim_you_autocorrect_before_correction), adjustment)
     finally
