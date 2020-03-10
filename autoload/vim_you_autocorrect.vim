@@ -19,6 +19,12 @@ let s:letter_regexp .= 'Ѐ-ӿ'
 let s:letter_regexp .= "'"
 let s:letter_regexp .= ']$'
 
+" ***************
+" *             *
+" * Autocorrect *
+" *             *
+" ***************
+
 function! s:autocorrect() abort
   let edit_pos = getpos('.')
 
@@ -92,6 +98,34 @@ function! s:autocorrect() abort
   endif
 endfunction
 
+" Returns true if pos1 is earlier in the buffer than pos2
+function! s:pos_before(pos1, pos2) abort
+  return a:pos1[1] < a:pos2[1]
+        \ || a:pos1[1] == a:pos2[1] && a:pos1[2] < a:pos2[2]
+endfunction
+
+function! s:pos_same(pos1, pos2) abort
+  return a:pos1[1] == a:pos2[1] && a:pos1[2] == a:pos2[2]
+endfunction
+
+" Returns whether or not it changed pos
+" N.B. Don't really care what happens to cursor if it's between the
+"      end before and the end after the change. There's no obvious
+"      "right" answer. Therefore arbitrarily selecting the "before"
+"      end. Could also have used the "after" or the max or the min.
+"
+function! s:update_position(pos, correction_pos, length_before_change, adjustment)
+  if a:adjustment != 0
+        \ && a:pos[1] == a:correction_pos[1]
+        \ && a:pos[2] > a:correction_pos[2] + a:length_before_change
+    let a:pos[2] = a:pos[2] + a:adjustment
+    return 1
+  endif
+
+  return 0
+endfunction
+
+
 function! s:correct_error(spell_pos, edit_pos, index)
   let old_length = strlen(getline('.'))
 
@@ -139,6 +173,12 @@ function! s:correct_error(spell_pos, edit_pos, index)
   return position_adjustment
 endfunction
 
+" ****************
+" *              *
+" * Highlighting *
+" *              *
+" ****************
+
 function! s:highlight_correction(spell_pos)
   if exists('w:vim_you_autocorrect_after_correction')
     let s:match_id = matchadd('AutocorrectGood', '\v%'
@@ -156,23 +196,11 @@ function! s:clear_highlight()
   endif
 endfunction
 
-function! s:reset_start_pos() abort
-  let s:start_pos = getpos('.')
-endfunction
-
-" Returns true if pos1 is earlier in the buffer than pos2
-function! s:pos_before(pos1, pos2) abort
-  return a:pos1[1] < a:pos2[1]
-        \ || a:pos1[1] == a:pos2[1] && a:pos1[2] < a:pos2[2]
-endfunction
-
-function! s:pos_same(pos1, pos2) abort
-  return a:pos1[1] == a:pos2[1] && a:pos1[2] == a:pos2[2]
-endfunction
-
-function! s:remove_autocommands() abort
-  autocmd! vim_you_autocorrect InsertEnter,CursorMovedI <buffer>
-endfunction
+" *************************
+" *                       *
+" * Enable/Disable Plugin *
+" *                       *
+" *************************
 
 function! vim_you_autocorrect#enable_autocorrect() abort
   " Save 'spell'
@@ -204,14 +232,38 @@ function! vim_you_autocorrect#disable_autocorrect() abort
   endif
 endfunction
 
-" This gets the line, and the start and end positions of the word that was
-" substituted in when making the correction.
-function! s:get_line_and_positions() abort
-  let corrected_line = getline(w:vim_you_autocorrect_last_pos[1])
-  let sp = w:vim_you_autocorrect_last_pos[2] - 1
-  let ep = sp + strlen(w:vim_you_autocorrect_after_correction)
+function! s:reset_start_pos() abort
+  let s:start_pos = getpos('.')
+endfunction
 
-  return [corrected_line, sp, ep]
+function! s:remove_autocommands() abort
+  autocmd! vim_you_autocorrect InsertEnter,CursorMovedI <buffer>
+endfunction
+
+" *************
+" *           *
+" * Undo Last *
+" *           *
+" *************
+
+function! vim_you_autocorrect#undo_last() abort
+  let length_before_change = len(w:vim_you_autocorrect_after_correction)
+  let adjustment = s:undo_last()
+
+  " Adjust the cursor position to account for changes in length.
+  "
+  " N.B. We're adjusting the position of the cursor correctly here, but
+  "      marks on the line won't move. In particular, the `` mark isn't
+  "      moved correctly, so you can't jump back to the correct position
+  "      in e.g. a mapping.
+  let edit_pos = getpos('.')
+  if s:update_position(edit_pos, w:vim_you_autocorrect_last_pos, length_before_change, adjustment)
+    silent! call setpos('.', edit_pos)
+  endif
+
+  if exists('w:vim_you_autocorrect_last_pos')
+    unlet w:vim_you_autocorrect_last_pos
+  endif
 endfunction
 
 function! s:undo_last() abort
@@ -246,24 +298,14 @@ function! s:undo_last() abort
   return adjustment
 endfunction
 
-function! vim_you_autocorrect#undo_last() abort
-  let length_before_change = len(w:vim_you_autocorrect_after_correction)
-  let adjustment = s:undo_last()
+" ****************
+" *              *
+" * Jump to Last *
+" *              *
+" ****************
 
-  " Adjust the cursor position to account for changes in length.
-  "
-  " N.B. We're adjusting the position of the cursor correctly here, but
-  "      marks on the line won't move. In particular, the `` mark isn't
-  "      moved correctly, so you can't jump back to the correct position
-  "      in e.g. a mapping.
-  let edit_pos = getpos('.')
-  if s:update_position(edit_pos, w:vim_you_autocorrect_last_pos, length_before_change, adjustment)
-    silent! call setpos('.', edit_pos)
-  endif
-
-  if exists('w:vim_you_autocorrect_last_pos')
-    unlet w:vim_you_autocorrect_last_pos
-  endif
+function! vim_you_autocorrect#jump_to_last() abort
+  call s:jump_to_last(0)
 endfunction
 
 function! s:jump_to_last(force_jump) abort
@@ -281,9 +323,21 @@ function! s:jump_to_last(force_jump) abort
   endif
 endfunction
 
-function! vim_you_autocorrect#jump_to_last() abort
-  call s:jump_to_last(0)
+" This gets the line, and the start and end positions of the word that was
+" substituted in when making the correction.
+function! s:get_line_and_positions() abort
+  let corrected_line = getline(w:vim_you_autocorrect_last_pos[1])
+  let sp = w:vim_you_autocorrect_last_pos[2] - 1
+  let ep = sp + strlen(w:vim_you_autocorrect_after_correction)
+
+  return [corrected_line, sp, ep]
 endfunction
+
+" ****************************
+" *                          *
+" * Next/Previous Correction *
+" *                          *
+" ****************************
 
 function! vim_you_autocorrect#next() abort
   call s:bump_correction(1)
@@ -291,23 +345,6 @@ endfunction
 
 function! vim_you_autocorrect#previous() abort
   call s:bump_correction(-1)
-endfunction
-
-" Returns whether or not it changed pos
-" N.B. Don't really care what happens to cursor if it's between the
-"      end before and the end after the change. There's no obvious
-"      "right" answer. Therefore arbitrarily selecting the "before"
-"      end. Could also have used the "after" or the max or the min.
-"
-function! s:update_position(pos, correction_pos, length_before_change, adjustment)
-  if a:adjustment != 0
-        \ && a:pos[1] == a:correction_pos[1]
-        \ && a:pos[2] > a:correction_pos[2] + a:length_before_change
-    let a:pos[2] = a:pos[2] + a:adjustment
-    return 1
-  endif
-
-  return 0
 endfunction
 
 function! s:bump_correction(direction) abort
