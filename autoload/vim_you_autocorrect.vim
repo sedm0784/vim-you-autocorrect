@@ -129,7 +129,9 @@ endfunction
 function! s:correct_error(spell_pos, edit_pos, index)
   let old_length = strlen(getline('.'))
 
-  " FIXME: Why am I using window variables and not buffer variables?
+  " Not sure why I originally decided to use window variables and not buffer
+  " variables, but it makes sense for the things that are window-local
+  " (matches, 'spell') and works quite well.
   let w:vim_you_autocorrect_last_pos = copy(a:spell_pos)
   let w:vim_you_autocorrect_last_edit_pos = copy(a:edit_pos)
 
