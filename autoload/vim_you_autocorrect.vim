@@ -183,9 +183,10 @@ function! s:highlight_correction(spell_pos)
 
   " Highlight
   if exists('w:vim_you_autocorrect_after_correction')
-    let s:match_id = matchadd('AutocorrectGood', '\v%'
-          \ . a:spell_pos[1] . 'l%'
-          \ . a:spell_pos[2] . 'c' . repeat('.', len(w:vim_you_autocorrect_after_correction)))
+    let s:match_id = matchaddpos('AutocorrectGood',
+          \ [[a:spell_pos[1],
+          \ a:spell_pos[2],
+          \ len(w:vim_you_autocorrect_after_correction)]])
     let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
   endif
 endfunction
