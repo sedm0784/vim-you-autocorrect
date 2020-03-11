@@ -188,6 +188,7 @@ function! s:highlight_correction(spell_pos)
           \ a:spell_pos[2],
           \ len(w:vim_you_autocorrect_after_correction)]])
     let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
+    let s:win_id = win_getid(winnr())
   endif
 endfunction
 
@@ -200,8 +201,10 @@ function! s:clear_highlight()
 
   " Clear the highlight
   if exists('s:match_id')
-    call matchdelete(s:match_id)
+    let winnr = winnr()
+    execute win_id2win(s:win_id) . 'windo call matchdelete(' . s:match_id . ')'
     unlet s:match_id
+    execute winnr . 'wincmd w'
   endif
 endfunction
 
