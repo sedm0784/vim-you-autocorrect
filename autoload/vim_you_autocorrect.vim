@@ -127,44 +127,59 @@ endfunction
 
 
 function! s:correct_error(spell_pos, edit_pos, index)
-  let old_length = strlen(getline('.'))
-
   " Not sure why I originally decided to use window variables and not buffer
   " variables, but it makes sense for the things that are window-local
   " (matches, 'spell') and works quite well.
+  "
+  " Save current spell_pos and edit_pos so I can jump back and re-run this
+  " function to pick different corrections with   Nz=
   let w:vim_you_autocorrect_last_pos = copy(a:spell_pos)
   let w:vim_you_autocorrect_last_edit_pos = copy(a:edit_pos)
 
-  " Save the original spelling of the most recent autocorrection so we
-  " can revert it
-  if a:edit_pos[1] == a:spell_pos[1]
-    let w:vim_you_autocorrect_before_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 2]
-  elseif a:edit_pos[1] == a:spell_pos[1] + 1
-    " FIXME: Is it possible that the spelling error isn't at the end of
-    "        the line? How?
-    let w:vim_you_autocorrect_before_correction = getline('.')[a:spell_pos[2] - 1:]
-  else
-    " FIXME: The spelling error isn't on this line or at the end of the
-    "        previous line. How did this happen?
-    unlet w:vim_you_autocorrect_before_correction
-    unlet w:vim_you_autocorrect_last_pos
-  endif
-
   " Correct the error.
+  let old_line = getline('.')
   execute 'keepjumps normal!'  a:index . 'z='
+  let new_line = getline('.')
 
   let position_adjustment = 0
+
+  " Start and end of the misspelled word
+  let start_index = a:spell_pos[2] - 1
+  let end_index = a:edit_pos[2] - 3
 
   if a:edit_pos[1] == a:spell_pos[1]
     " Adjust cursor position if the replacement is a different length
     " and is on same line as us.
-    let position_adjustment = strlen(getline('.')) - old_length
+    let position_adjustment = strlen(new_line) - strlen(old_line)
 
-    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 2 + position_adjustment]
+    " Save the original and corrected spellings of the most recent
+    " autocorrection so we can revert it.
+    "
+    " Problem occurs when correction "include[s] other text". Need to include
+    " this other text in our saved before/after. e.g. when "anotherr test" is
+    " replaced by "another retest", we need to include the space in the before and
+    " the "e" in the after.
+    "
+    " Check for differences in the lines after the current end_index, and
+    " extend the index if any are found. I don't know how far we have to go,
+    " so far the only examples I've found include a single extra space, but
+    " arbitrarily doing it for 10 more bytes.
+    for i in range(end_index + 1, end_index + 10)
+      if old_line[i] != new_line[i + position_adjustment]
+        let end_index = i
+      endif
+    endfor
+    let w:vim_you_autocorrect_before_correction = old_line[start_index:end_index]
+    let w:vim_you_autocorrect_after_correction = new_line[start_index:end_index + position_adjustment]
   elseif a:edit_pos[1] == a:spell_pos[1] + 1
-    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:]
+    " FIXME: Is it possible that the spelling error isn't at the end of
+    "        the line? How?
+    let w:vim_you_autocorrect_before_correction = old_line[start_index:]
+    let w:vim_you_autocorrect_after_correction = new_line[start_index:]
   else
-    " FIXME: How did we get in here?
+    " FIXME: The spelling error isn't on this line or at the end of the
+    "        previous line. How did this happen?
+    unlet w:vim_you_autocorrect_before_correction
     unlet w:vim_you_autocorrect_after_correction
     unlet w:vim_you_autocorrect_last_pos
   endif
@@ -185,18 +200,10 @@ function! s:highlight_correction(spell_pos)
 
   " Highlight
   if exists('w:vim_you_autocorrect_after_correction')
-    " The correction includes the space after the word, in case this is also
-    " included in the replacement. However, we don't want to highlight this if
-    " it IS a space.
-    if getline(a:spell_pos[1])[a:spell_pos[2] + len(w:vim_you_autocorrect_after_correction) - 2] == ' '
-      let space_adjustment = 1
-    else
-      let space_adjustment = 0
-    endif
     let s:match_id = matchaddpos('AutocorrectGood',
           \ [[a:spell_pos[1],
           \ a:spell_pos[2],
-          \ len(w:vim_you_autocorrect_after_correction) - space_adjustment]])
+          \ len(w:vim_you_autocorrect_after_correction)]])
     let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
     let s:win_id = win_getid(winnr())
   endif
