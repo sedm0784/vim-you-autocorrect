@@ -212,9 +212,14 @@ function! s:clear_highlight()
   " Clear the highlight
   if exists('s:match_id')
     let winnr = winnr()
-    execute win_id2win(s:win_id) . 'windo call matchdelete(' . s:match_id . ')'
+    let tabpagenr = tabpagenr()
+    let highlight_tabwin = win_id2tabwin(s:win_id)
+    if highlight_tabwin != [0, 0]
+      execute highlight_tabwin[0] . 'tabdo' highlight_tabwin[1] . 'windo call matchdelete(' . s:match_id . ')'
+      execute tabpagenr . 'tabnext'
+      execute winnr . 'wincmd w'
+    endif
     unlet s:match_id
-    execute winnr . 'wincmd w'
   endif
 endfunction
 
