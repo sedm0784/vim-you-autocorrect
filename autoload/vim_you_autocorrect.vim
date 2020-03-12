@@ -138,7 +138,7 @@ function! s:correct_error(spell_pos, edit_pos, index)
   " Save the original spelling of the most recent autocorrection so we
   " can revert it
   if a:edit_pos[1] == a:spell_pos[1]
-    let w:vim_you_autocorrect_before_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 3]
+    let w:vim_you_autocorrect_before_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 2]
   elseif a:edit_pos[1] == a:spell_pos[1] + 1
     " FIXME: Is it possible that the spelling error isn't at the end of
     "        the line? How?
@@ -160,7 +160,7 @@ function! s:correct_error(spell_pos, edit_pos, index)
     " and is on same line as us.
     let position_adjustment = strlen(getline('.')) - old_length
 
-    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 3 + position_adjustment]
+    let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:a:edit_pos[2] - 2 + position_adjustment]
   elseif a:edit_pos[1] == a:spell_pos[1] + 1
     let w:vim_you_autocorrect_after_correction = getline('.')[a:spell_pos[2] - 1:]
   else
@@ -185,10 +185,18 @@ function! s:highlight_correction(spell_pos)
 
   " Highlight
   if exists('w:vim_you_autocorrect_after_correction')
+    " The correction includes the space after the word, in case this is also
+    " included in the replacement. However, we don't want to highlight this if
+    " it IS a space.
+    if getline(a:spell_pos[1])[a:spell_pos[2] + len(w:vim_you_autocorrect_after_correction) - 2] == ' '
+      let space_adjustment = 1
+    else
+      let space_adjustment = 0
+    endif
     let s:match_id = matchaddpos('AutocorrectGood',
           \ [[a:spell_pos[1],
           \ a:spell_pos[2],
-          \ len(w:vim_you_autocorrect_after_correction)]])
+          \ len(w:vim_you_autocorrect_after_correction) - space_adjustment]])
     let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
     let s:win_id = win_getid(winnr())
   endif
