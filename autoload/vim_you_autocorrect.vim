@@ -198,6 +198,10 @@ function! s:highlight_correction(spell_pos)
   " Clear any existing highlight (and timer)
   call s:clear_highlight()
 
+  if get(g:, 'vim_you_autocorrect_disable_highlighting', 0)
+    return
+  endif
+
   " Highlight
   if exists('w:vim_you_autocorrect_after_correction')
     let s:match_id = matchaddpos('AutocorrectGood',
