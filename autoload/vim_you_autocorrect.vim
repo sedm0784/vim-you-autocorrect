@@ -208,7 +208,9 @@ function! s:highlight_correction(spell_pos)
           \ [[a:spell_pos[1],
           \ a:spell_pos[2],
           \ len(w:vim_you_autocorrect_after_correction)]])
-    let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
+    if has('timers')
+      let s:timer_id = timer_start(10000, {timer_id -> s:clear_highlight()})
+    endif
     let s:win_id = win_getid(winnr())
   endif
 endfunction
@@ -253,6 +255,10 @@ function! vim_you_autocorrect#enable_autocorrect() abort
   augroup vim_you_autocorrect
     autocmd InsertEnter <buffer> call <SID>reset_start_pos()
     autocmd CursorMovedI <buffer> call <SID>autocorrect()
+    if !has('timers')
+      autocmd CursorHold <buffer> call <SID>clear_highlight()
+      autocmd CursorHoldI <buffer> call <SID>clear_highlight()
+    endif
   augroup END
 
   highlight link AutocorrectGood SpellBad
