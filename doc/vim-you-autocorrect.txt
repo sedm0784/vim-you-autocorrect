@@ -6,7 +6,7 @@
       Copyright:  © 2018 Rich Cheng
         Licence:  Vim You, Autocorrect! uses the same licence as Vim. (See
                   |license|.)
-        Version:  1.0.1
+        Version:  1.1.0
 
 ==============================================================================
      _      _   _          _     ___   _                                   ~
@@ -20,15 +20,18 @@
 ==============================================================================
 CONTENTS                                                *autocorrect-contents*
 
-    1. Introduction ..........................|autocorrect-introduction|
-    2. Usage .................................|autocorrect-usage|
-        2.1 Commands .........................|autocorrect-commands|
-    3. How Does It Work? .....................|autocorrect-how-does-it-work|
-    4. Changelog .............................|autocorrect-changelog|
-    5. Issues ................................|autocorrect-issues|
-        5.1 Known Issues .....................|autocorrect-known-issues|
-        5.2 Reporting Issues .................|autocorrect-reporting-issues|
-    6. Credits ...............................|autocorrect-credits|
+    1. Introduction ......................|autocorrect-introduction|
+    2. Usage .............................|autocorrect-usage|
+        2.1 Commands .....................|autocorrect-commands|
+    3. How Does It Work? .................|autocorrect-how-does-it-work|
+    4. Advanced Configuration.............|autocorrect-advanced-configuration|
+        4.1 Highlighting .................|autocorrect-highlighting|
+        4.2 Mappings .....................|autocorrect-mappings|
+    5. Changelog .........................|autocorrect-changelog|
+    6. Issues ............................|autocorrect-issues|
+        6.1 Known Issues .................|autocorrect-known-issues|
+        6.2 Reporting Issues .............|autocorrect-reporting-issues|
+    7. Credits ...........................|autocorrect-credits|
 
 ==============================================================================
 1. Introduction                                     *autocorrect-introduction*
@@ -57,7 +60,6 @@ never have to worry about spelling errors again!
                  autocmd BufEnter * EnableAutocorrect
                augroup END
 <
-
                                              *autocorrect-:DisableAutocorrect*
 :DisableAutocorrect
                This turns Vim You, Autocorrect! off again. You will probably
@@ -76,22 +78,130 @@ does something like the following:
       command to accept the first spelling suggestion.
 
 ==============================================================================
-4. Changelog                                           *autocorrect-changelog*
+4. Advanced Configuration                               *autocorrect-mappings*
 
+------------------------------------------------------------------------------
+4.1 Highlighting                                    *autocorrect-highlighting*
+
+Vim You, Autocorrect! adds a new |highlight| group, which is used to highlight
+the most recent correction for a short period of time.
+
+                                              *autocorrect-hl-AutocorrectGood*
+AutocorrectGood
+                The most recently corrected word. By default, this simply
+                links to your current |hl-SpellBad| highlight group (because
+                otherwise, you might get sad because you never get to see that
+                colour). If you want to define your own highlighting instead,
+                add a line such as the following to your |vimrc|:
+>
+                highlight AutocorrectGood ctermfg=Red guifg=Red gui=undercurl
+<
+If you set a |colorscheme| in your |vimrc|, ensure that you do so BEFORE
+setting your |AutocorrectGood| highlight: some colorschemes will clear
+existing highlighting when they are set. Alternatively, use a |ColorScheme|
+autocommand; this is the mechanism Vim provides for ensuring specified
+highlights are always respected.
+
+                                *'g:vim_you_autocorrect_disable_highlighting'*
+'g:vim_you_autocorrect_disable_highlighting'
+                        boolean (default off)
+                        global
+                To disable highlighting entirely, add the following option to
+                your |vimrc|:
+>
+                let g:vim_you_autocorrect_disable_highlighting = 1
+<
+------------------------------------------------------------------------------
+4.2 Mappings
+
+Version 1.0 of Vim You, Autocorrect! ensures that everything you type is
+spelled CORRECTLY. However, subsequent to its release, I have been informed
+that some users occasionally want to include words that are spelled
+INCORRECTLY or LESS correctly in the things they write. Why do they want
+this? It is a mystery to modern science.
+
+Nevertheless, I am nothing if not ACCOMMODATING: I have prepared a number of
+features to facilitate this unusual request. Vim You, Autocorrect! does not
+add any mappings by default, that would be RUDE, but it provides a number of
+internal mappings you can map to in your |vimrc|. (See |using-<Plug>|.)
+
+                                                            *autocorrect-undo*
+<Plug>VimyouautocorrectUndo
+                Undo the most recent correction, returning the word to its
+                originally typed (incorrect) spelling. e.g. Add this mapping
+                to your |vimrc| to invoke this feature by typing   |<Leader>|u
+                in normal mode:
+>
+                nmap <Leader>u <Plug>VimyouautocorrectUndo
+<
+                Or add this mapping to undo corrections by pressing   <F3>
+                in insert mode:
+>
+                imap <F3> <C-O><Plug>VimyouautocorrectUndo
+<
+                                                            *autocorrect-jump*
+<Plug>VimyouautocorrectJump
+                Position cursor at the start of the most recent
+                correction. e.g. To override the default behaviour of   |[s|
+                (Because, hey, you're not using that now anyway, are you?) and
+                use it instead to jump back to the last correction,
+                add the following mapping to your |vimrc|:
+>
+                nmap [s <Plug>VimyouautocorrectJump
+<
+                Or to jump back and open Vim's regular interface for selecting
+                a spelling correction by typing   |z=|   (You're not using
+                that anymore, either, right?) try the following:
+>
+                nmap z= <Plug>VimyouautocorrectJump:norm!z=<CR>
+<
+                                                            *autocorrect-next*
+<Plug>VimyouautocorrectNext
+                For the most recent correction, select the next of Vim's
+                suggested corrections.
+
+                                                        *autocorrect-previous*
+<Plug>VimyouautocorrectPrevious
+                For the most recent correction, select the previous of Vim's
+                suggested corrections.
+
+These commands allow you to step through Vim's list of spelling suggestions.
+e.g. to set up   |]s|   and   |[s|   to iterate forwards and backwards through
+Vim's list of suggestions, use the following normal mode mappings:
+>
+                nmap ]s <Plug>VimyouautocorrectNext
+                nmap [s <Plug>VimyouautocorrectPrevious
+<
+Or if you don't want to exit insert mode, try these mappings:
+>
+                imap <F4> <C-O><Plug>VimyouautocorrectPrevious
+                imap <F5> <C-O><Plug>VimyouautocorrectNext
+<
+Wait, I thought of a reason you might want to do this! Maybe you are QUOTING
+text from elsewhere, and you need to preserve the INCORRECT spelling rather
+than MISQUOTE the source. Perhaps a future version of Vim You, Autocorrect!
+will add a feature to append [sic] to the text whenever you invoke the
+VimyouautocorrectUndo mapping.
+
+==============================================================================
+5. Changelog                                           *autocorrect-changelog*
+
+Version 1.1.0 - Add features to allow incorrect and less correct words to be
+                entered.
 Version 1.0.1 - Use   `1z=`   instead of   `z=1<CR>`   . Minor updates to :help.
 Version 1.0.0 - Vim You, Autocorrect! released
 
 ==============================================================================
-5. Issues                                                 *autocorrect-issues*
+6. Issues                                                 *autocorrect-issues*
 
 ------------------------------------------------------------------------------
-5.1 Known Limitations                               *autocorrect-known-issues*
+6.1 Known Limitations                               *autocorrect-known-issues*
 
 Vim You, Autocorrect! is flawless, both in execution and more importantly in
 conception.
 
 ------------------------------------------------------------------------------
-5.2 Reporting Issues                            *autocorrect-reporting-issues*
+6.2 Reporting Issues                            *autocorrect-reporting-issues*
 
 If your issue is anything other than, “I'm struggling to cope with how
 remarkably SPECTACULAR Vim You, Autocorrect! is,” then it seems likely your
@@ -108,7 +218,7 @@ Or if you prefer, feel free to email or tweet instead:
     @sedm0784
 
 ==============================================================================
-6. Credits                                               *autocorrect-credits*
+7. Credits                                               *autocorrect-credits*
 
 Vim You, Autocorrect! was written by Rich Cheng.
 
