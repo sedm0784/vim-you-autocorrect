@@ -8,7 +8,7 @@
 
 Vim 1.1 adds NEW FEATURES, finally allowing you to enter INCORRECT and LESS CORRECT words into your screenplay. LEAP back to corrected words. UNDO corrections, restoring your typos to their former glory. SKIP through Vim's suggested spellings with simple USER CONFIGURABLE mappings.
 
-See [the docs](https://github.com/sedm0784/vim-you-autocorrect/blob/master/doc/vim-you-autocorrect.txt#L81) for more details.
+See [the docs](https://github.com/sedm0784/vim-you-autocorrect/blob/71652ae0ea5cfc9bf8668da6e090b04476f51f4b/doc/vim-you-autocorrect.txt#L81) for more details.
 
 ## Original Blurb
 
