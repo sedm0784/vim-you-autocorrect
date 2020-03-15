@@ -151,9 +151,9 @@ internal mappings you can map to in your |vimrc|. (See |using-<Plug>|.)
 <
                 Or to jump back and open Vim's regular interface for selecting
                 a spelling correction by typing   |z=|   (You're not using
-                that anymore, either, right?) try the following:
+                that any more, either, right?) try this mapping:
 >
-                nmap z= <Plug>VimyouautocorrectJump:norm!z=<CR>
+                nmap z= <Plug>VimyouautocorrectJump<Plug>VimyouautocorrectUndo:call feedkeys('z=', 'n')<CR>
 <
                                                             *autocorrect-next*
 <Plug>VimyouautocorrectNext
