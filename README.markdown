@@ -2,6 +2,16 @@
 
 *Why should smartphones get all the fun?*
 
+## UPDATE!!! New Version!
+
+*Hot off the presses!*
+
+Vim 1.1 adds NEW FEATURES, finally allowing you to enter INCORRECT and LESS CORRECT words into your screenplay. LEAP back to corrected words. UNDO corrections, restoring your typos to their former glory. SKIP through Vim's suggested spellings with simple USER CONFIGURABLE mappings.
+
+See [the docs](https://github.com/sedm0784/vim-you-autocorrect/blob/master/doc/vim-you-autocorrect.txt#L81) for more details.
+
+## Original Blurb
+
 Find Vim&rsquo;s commands for correcting spelling mistakes UNWIELDLY? Long for a
 solution that approaches the EASE-OF-USE and FOOLPROOF SOPHISTICATION of your
 phone&rsquo;s autocorrect mechanism?
