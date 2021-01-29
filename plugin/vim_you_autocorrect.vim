@@ -1,9 +1,9 @@
 " vim-you-autocorrect.vim - Vim You, autocorrect!
 " Author: Rich Cheng <http://whileyouweregone.co.uk>
 " Homepage: http://github.com/sedm0784/vim-you-autocorrect
-" Copyright: © 2018 Rich Cheng
+" Copyright: © 2018–2021 Rich Cheng
 " Licence: Vim You, Autocorrect! uses the Vim licence.
-" Version: 1.0.1
+" Version: 1.1.1
 
 " Set coptions so we can use line continuation
 let s:save_cpo = &cpoptions
