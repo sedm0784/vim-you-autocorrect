@@ -78,14 +78,36 @@ function! s:autocorrect() abort
     " partial lines at the top of the window. (Only at the bottom when
     " 'display' is set appropriately.)
     "
-    " FIXME: Punting on horizontal scrolls for now. I can't imagine many
-    "        people write prose with wrapping switched off.
-    " FIXME: Also punting on supporting scrolloff=999. I'll deal with that if and
-    "        when people complain about it.
+    let cursor_can_move_vertically = winheight(0) > &scrolloff * 2 + 1
     let top_of_window = winline() - &scrolloff <= 1
-    if empty(spellbadword(before_cursor)[0])
+
+    " In order to avoid incorrectly scrolling to the start of a long
+    " soft-wrapped line, we only check the last word before the cursor.
+    "
+    " In order to avoid incorrectly scrolling when there's a mistake early on
+    " the previous line and 'scrolloff' is super high, we only check the final
+    " word on the line.
+    "
+    " There are edge cases in the above where what 'spell' considers to be a
+    " word does match whitespace delimination. Too hard to fix though, unless
+    " lots of people complain.
+    "
+    " There's also an edge case for scrolloff=999 where the last word on this
+    " or the previous line wasn't added by the previous insert. But this will
+    " be pretty uncommon.
+    let g:before_cursor_list = split(trim(before_cursor))
+    let g:previous_line_list = split(trim(getline(line('.') - 1)))
+
+    let last_word = empty(g:before_cursor_list) ? "" : g:before_cursor_list[-1]
+    let last_word_on_previous = empty(g:previous_line_list) ? "" : g:previous_line_list[-1]
+
+    if s:no_error_in(last_word)
           \ &&
-          \ (top_of_window || empty(spellbadword(getline(line('.') - 1))[0]))
+          \ (
+          \   (top_of_window && cursor_can_move_vertically)
+          \   ||
+          \   s:no_error_in(last_word_on_previous)
+          \ )
       " There's no spelling mistake!
       return
     endif
@@ -140,6 +162,13 @@ function! s:autocorrect() abort
       silent! call setpos('.', edit_pos)
     endtry
   endif
+endfunction
+
+" Little helper for checking if there's a spelling error in a string
+function! s:no_error_in(the_string) abort
+  " spellbadword() returns a list containing two items. If the first item in
+  " the list is the empty string, then there was no spelling error.
+  return empty(spellbadword(a:the_string)[0])
 endfunction
 
 " Returns true if pos1 is earlier in the buffer than pos2
