@@ -6,7 +6,7 @@
       Copyright:  © 2018–2021 Rich Cheng
         Licence:  Vim You, Autocorrect! uses the same licence as Vim. (See
                   |license|.)
-        Version:  1.1.1
+        Version:  1.1.2
 
 ==============================================================================
      _      _   _          _     ___   _                                   ~
@@ -186,6 +186,8 @@ VimyouautocorrectUndo mapping.
 ==============================================================================
 5. Changelog                                           *autocorrect-changelog*
 
+Version 1.1.2 - Boring technical stuff. No real changes unless you care about
+                global namespace POLLUTION.
 Version 1.1.1 - Fix MYSTERIOUS stuttering issue reported by users.
                 https://github.com/sedm0784/vim-you-autocorrect/issues/5
 Version 1.1.0 - Add features to allow incorrect and less correct words to be
