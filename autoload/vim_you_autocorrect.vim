@@ -38,6 +38,7 @@ function! s:autocorrect() abort
   endif
 
   let line = getline('.')
+  let before_cursor = line[:edit_pos[2] - 2]
 
   " N.B. It would probably be better just to check the last 4 bytes, but that
   " would require doing MATHS: I'm guessing this is still pretty quick unless
@@ -45,7 +46,50 @@ function! s:autocorrect() abort
   " start of the last 4 bytes comes halfway through a code point.)
   if empty(line)
         \ ||
-        \ line[:edit_pos[2] - 2] !~? s:letter_regexp
+        \ before_cursor !~? s:letter_regexp
+
+    " Users have reported flickering whenever a word is typed. I couldn't
+    " reproduce (except by adding a hard-coded redraw/sleep), but it seems
+    " like the problem is that Vim is redrawing (very briefly) when we jump to
+    " the spelling mistake, so if the movement causes a scroll, (e.g. if the
+    " spelling error is off-screen), we get a flicker of that section of the
+    " buffer.
+    "
+    " Attempting to work around it by checking if there's a spelling error
+    " *before* invoking   [s   . We do this by the mechanism of looking for a
+    " spelling error behind the cursor on this line or the previous one.
+    "
+    " Note that, if the closest spelling error is further back in the buffer,
+    " Vim You, Autocorrect! would decline to correct it anyway, reasoning that
+    " it cannot just have been typed if it's over a line away.
+    "
+    " Note also that if there is a spelling error on this line, it's not
+    " relevant for this issue whether or not the user typed it in this insert:
+    " either way, jumping to it won't cause a (vertical) scroll.
+    "
+    " Note finally that if the user is at the top of the screen (accounting
+    " for 'scrolloff'), they cannot possibly just have hit enter (because then
+    " their cursor would have moved one screen line line lower down, so we
+    " *don't* want to scroll to any errors in the line immediately above.
+    "
+    " Note seriously for the last time that if there is an error at the start
+    " of a very long soft-wrapped line, and that error is off-screen, then the
+    " entire line must be off-screen, because of the way Vim will never display
+    " partial lines at the top of the window. (Only at the bottom when
+    " 'display' is set appropriately.)
+    "
+    " FIXME: Punting on horizontal scrolls for now. I can't imagine many
+    "        people write prose with wrapping switched off.
+    " FIXME: Also punting on supporting scrolloff=999. I'll deal with that if and
+    "        when people complain about it.
+    let top_of_window = winline() - &scrolloff <= 1
+    if empty(spellbadword(before_cursor)[0])
+          \ &&
+          \ (top_of_window || empty(spellbadword(getline(line('.') - 1))[0]))
+      " There's no spelling mistake!
+      return
+    endif
+
     " Jump to the error
     silent! keepjumps normal! [s
 
