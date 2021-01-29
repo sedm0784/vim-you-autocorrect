@@ -157,11 +157,11 @@ function! s:no_error_nearby(before_cursor) abort
   " There's also an edge case for scrolloff=999 where the last word on this
   " or the previous line wasn't added by the previous insert. But this will
   " be pretty uncommon.
-  let g:before_cursor_list = split(trim(a:before_cursor))
-  let g:previous_line_list = split(trim(getline(line('.') - 1)))
+  let before_cursor_list = split(trim(a:before_cursor))
+  let previous_line_list = split(trim(getline(line('.') - 1)))
 
-  let last_word = empty(g:before_cursor_list) ? "" : g:before_cursor_list[-1]
-  let last_word_on_previous = empty(g:previous_line_list) ? "" : g:previous_line_list[-1]
+  let last_word = empty(before_cursor_list) ? "" : before_cursor_list[-1]
+  let last_word_on_previous = empty(previous_line_list) ? "" : previous_line_list[-1]
 
   if s:no_error_in(last_word)
         \ &&
