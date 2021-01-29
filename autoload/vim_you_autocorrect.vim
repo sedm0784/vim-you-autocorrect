@@ -48,70 +48,8 @@ function! s:autocorrect() abort
         \ ||
         \ before_cursor !~? s:letter_regexp
 
-    if exists('*spellbadword')
-      " Users have reported flickering whenever a word is typed. I couldn't
-      " reproduce (except by adding a hard-coded redraw/sleep), but it seems
-      " like the problem is that Vim is redrawing (very briefly) when we jump to
-      " the spelling mistake, so if the movement causes a scroll, (e.g. if the
-      " spelling error is off-screen), we get a flicker of that section of the
-      " buffer.
-      "
-      " Attempting to work around it by checking if there's a spelling error
-      " *before* invoking   [s   . We do this by the mechanism of looking for a
-      " spelling error behind the cursor on this line or the previous one.
-      "
-      " Note that, if the closest spelling error is further back in the buffer,
-      " Vim You, Autocorrect! would decline to correct it anyway, reasoning that
-      " it cannot just have been typed if it's over a line away.
-      "
-      " Note also that if there is a spelling error on this line, it's not
-      " relevant for this issue whether or not the user typed it in this insert:
-      " either way, jumping to it won't cause a (vertical) scroll.
-      "
-      " Note finally that if the user is at the top of the screen (accounting
-      " for 'scrolloff'), they cannot possibly just have hit enter (because then
-      " their cursor would have moved one screen line line lower down, so we
-      " *don't* want to scroll to any errors in the line immediately above.
-      "
-      " Note seriously for the last time that if there is an error at the start
-      " of a very long soft-wrapped line, and that error is off-screen, then the
-      " entire line must be off-screen, because of the way Vim will never display
-      " partial lines at the top of the window. (Only at the bottom when
-      " 'display' is set appropriately.)
-      "
-      let cursor_can_move_vertically = winheight(0) > &scrolloff * 2 + 1
-      let top_of_window = winline() - &scrolloff <= 1
-
-      " In order to avoid incorrectly scrolling to the start of a long
-      " soft-wrapped line, we only check the last word before the cursor.
-      "
-      " In order to avoid incorrectly scrolling when there's a mistake early on
-      " the previous line and 'scrolloff' is super high, we only check the final
-      " word on the line.
-      "
-      " There are edge cases in the above where what 'spell' considers to be a
-      " word does match whitespace delimination. Too hard to fix though, unless
-      " lots of people complain.
-      "
-      " There's also an edge case for scrolloff=999 where the last word on this
-      " or the previous line wasn't added by the previous insert. But this will
-      " be pretty uncommon.
-      let g:before_cursor_list = split(trim(before_cursor))
-      let g:previous_line_list = split(trim(getline(line('.') - 1)))
-
-      let last_word = empty(g:before_cursor_list) ? "" : g:before_cursor_list[-1]
-      let last_word_on_previous = empty(g:previous_line_list) ? "" : g:previous_line_list[-1]
-
-      if s:no_error_in(last_word)
-            \ &&
-            \ (
-            \   (top_of_window && cursor_can_move_vertically)
-            \   ||
-            \   s:no_error_in(last_word_on_previous)
-            \ )
-        " There's no spelling mistake!
-        return
-      endif
+    if (s:no_error_nearby(before_cursor))
+      return
     endif
 
     " Jump to the error
@@ -164,6 +102,79 @@ function! s:autocorrect() abort
       silent! call setpos('.', edit_pos)
     endtry
   endif
+endfunction
+
+function! s:no_error_nearby(before_cursor) abort
+  if !exists('*spellbadword')
+    " We can't check for nearby spelling errors without this function
+    return 0
+  endif
+
+  " Users have reported flickering whenever a word is typed. I couldn't
+  " reproduce (except by adding a hard-coded redraw/sleep), but it seems
+  " like the problem is that Vim is redrawing (very briefly) when we jump to
+  " the spelling mistake, so if the movement causes a scroll, (e.g. if the
+  " spelling error is off-screen), we get a flicker of that section of the
+  " buffer.
+  "
+  " Attempting to work around it by checking if there's a spelling error
+  " *before* invoking   [s   . We do this by the mechanism of looking for a
+  " spelling error behind the cursor on this line or the previous one.
+  "
+  " Note that, if the closest spelling error is further back in the buffer,
+  " Vim You, Autocorrect! would decline to correct it anyway, reasoning that
+  " it cannot just have been typed if it's over a line away.
+  "
+  " Note also that if there is a spelling error on this line, it's not
+  " relevant for this issue whether or not the user typed it in this insert:
+  " either way, jumping to it won't cause a (vertical) scroll.
+  "
+  " Note finally that if the user is at the top of the screen (accounting
+  " for 'scrolloff'), they cannot possibly just have hit enter (because then
+  " their cursor would have moved one screen line line lower down, so we
+  " *don't* want to scroll to any errors in the line immediately above.
+  "
+  " Note seriously for the last time that if there is an error at the start
+  " of a very long soft-wrapped line, and that error is off-screen, then the
+  " entire line must be off-screen, because of the way Vim will never display
+  " partial lines at the top of the window. (Only at the bottom when
+  " 'display' is set appropriately.)
+  "
+  let cursor_can_move_vertically = winheight(0) > &scrolloff * 2 + 1
+  let top_of_window = winline() - &scrolloff <= 1
+
+  " In order to avoid incorrectly scrolling to the start of a long
+  " soft-wrapped line, we only check the last word before the cursor.
+  "
+  " In order to avoid incorrectly scrolling when there's a mistake early on
+  " the previous line and 'scrolloff' is super high, we only check the final
+  " word on the line.
+  "
+  " There are edge cases in the above where what 'spell' considers to be a
+  " word does match whitespace delimination. Too hard to fix though, unless
+  " lots of people complain.
+  "
+  " There's also an edge case for scrolloff=999 where the last word on this
+  " or the previous line wasn't added by the previous insert. But this will
+  " be pretty uncommon.
+  let g:before_cursor_list = split(trim(a:before_cursor))
+  let g:previous_line_list = split(trim(getline(line('.') - 1)))
+
+  let last_word = empty(g:before_cursor_list) ? "" : g:before_cursor_list[-1]
+  let last_word_on_previous = empty(g:previous_line_list) ? "" : g:previous_line_list[-1]
+
+  if s:no_error_in(last_word)
+        \ &&
+        \ (
+        \   (top_of_window && cursor_can_move_vertically)
+        \   ||
+        \   s:no_error_in(last_word_on_previous)
+        \ )
+    " There's no spelling mistake!
+    return 1
+  endif
+
+  return 0
 endfunction
 
 " Little helper for checking if there's a spelling error in a string
