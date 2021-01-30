@@ -141,7 +141,12 @@ function! s:no_error_nearby(before_cursor) abort
   " 'display' is set appropriately.)
   "
   let cursor_can_move_vertically = winheight(0) > &scrolloff * 2 + 1
-  let top_of_window = winline() - &scrolloff <= 1
+
+  " Vim will never display the first line in the file any lower than the top
+  " of the window: essentially, scrolloff is ignored at the top of the
+  " file.
+  let scrolloff_adjust = line('.') > &scrolloff + 1 ? &scrolloff : 0
+  let top_of_window = winline() - scrolloff_adjust <= 1
 
   " In order to avoid incorrectly scrolling to the start of a long
   " soft-wrapped line, we only check the last word before the cursor.
