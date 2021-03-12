@@ -14,7 +14,7 @@ latest correction to be reminded how often this plugin has saved you from
 embarrassing yourself with your preschool-level understanding of how words are
 spelled.
 
-See [`:help autocorrect-advanced-configuration`](https://github.com/sedm0784/vim-you-autocorrect/blob/71652ae0ea5cfc9bf8668da6e090b04476f51f4b/doc/vim-you-autocorrect.txt#L81) for more details.
+See [`:help autocorrect-advanced-configuration`](https://github.com/sedm0784/vim-you-autocorrect/blob/d20e80b204db91f9aa65f1ff81d4cbf60b8cc470/doc/vim-you-autocorrect.txt#L81) for more details.
 
 ## Original Blurb
 
