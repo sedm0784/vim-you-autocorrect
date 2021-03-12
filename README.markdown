@@ -6,9 +6,15 @@
 
 *Hot off the presses!*
 
-Vim 1.1 adds NEW FEATURES, finally allowing you to enter INCORRECT and LESS CORRECT words into your screenplay. LEAP back to corrected words. UNDO corrections, restoring your typos to their former glory. SKIP through Vim's suggested spellings with simple USER CONFIGURABLE mappings.
+Vim 1.1 adds NEW FEATURES, finally allowing you to enter INCORRECT and LESS
+CORRECT words into your screenplay. LEAP back to corrected words. UNDO
+corrections, restoring your typos to their former glory. SKIP through Vim's
+suggested spellings with simple USER CONFIGURABLE mappings. HIGHLIGHT the
+latest correction to be reminded how often this plugin has saved you from
+embarrassing yourself with your preschool-level understanding of how words are
+spelled.
 
-See [the docs](https://github.com/sedm0784/vim-you-autocorrect/blob/71652ae0ea5cfc9bf8668da6e090b04476f51f4b/doc/vim-you-autocorrect.txt#L81) for more details.
+See [`:help autocorrect-advanced-configuration`](https://github.com/sedm0784/vim-you-autocorrect/blob/71652ae0ea5cfc9bf8668da6e090b04476f51f4b/doc/vim-you-autocorrect.txt#L81) for more details.
 
 ## Original Blurb
 

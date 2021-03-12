@@ -6,7 +6,7 @@
       Copyright:  © 2018–2021 Rich Cheng
         Licence:  Vim You, Autocorrect! uses the same licence as Vim. (See
                   |license|.)
-        Version:  1.1.3
+        Version:  1.1.4
 
 ==============================================================================
      _      _   _          _     ___   _                                   ~
@@ -78,7 +78,7 @@ does something like the following:
       command to accept the first spelling suggestion.
 
 ==============================================================================
-4. Advanced Configuration                               *autocorrect-mappings*
+4. Advanced Configuration                 *autocorrect-advanced-configuration*
 
 ------------------------------------------------------------------------------
 4.1 Highlighting                                    *autocorrect-highlighting*
@@ -112,7 +112,7 @@ highlights are always respected.
                 let g:vim_you_autocorrect_disable_highlighting = 1
 <
 ------------------------------------------------------------------------------
-4.2 Mappings
+4.2 Mappings                                            *autocorrect-mappings*
 
 Version 1.0 of Vim You, Autocorrect! ensures that everything you type is
 spelled CORRECTLY. However, subsequent to its release, I have been informed
