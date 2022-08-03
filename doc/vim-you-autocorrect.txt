@@ -6,7 +6,7 @@
       Copyright:  © 2018–2021 Rich Cheng
         Licence:  Vim You, Autocorrect! uses the same licence as Vim. (See
                   |license|.)
-        Version:  1.1.4
+        Version:  1.1.5
 
 ==============================================================================
      _      _   _          _     ___   _                                   ~
@@ -186,6 +186,9 @@ VimyouautocorrectUndo mapping.
 ==============================================================================
 5. Changelog                                           *autocorrect-changelog*
 
+Version 1.1.5 - Correctly correct capitalisation at the start of a sentence.
+                https://github.com/sedm0784/vim-you-autocorrect/issues/7
+Version 1.1.4 - Minor documentation tweaks/fixes. No code changes.
 Version 1.1.3 - Fix corrections at end of line at top of file when |scrolloff|
                 is set.
 Version 1.1.2 - Boring technical stuff. No real changes unless you care about
