@@ -162,24 +162,47 @@ function! s:no_error_nearby(before_cursor) abort
   " There's also an edge case for scrolloff=999 where the last word on this
   " or the previous line wasn't added by the previous insert. But this will
   " be pretty uncommon.
+  "
+  " If we only check the last word on the line, then we'll miss SpellCap
+  " errors, as the call to spellbadword won't know about the punctuation
+  " ending the previous sentence. Instead, we now check the last two words on
+  " this and, when necessary, the previous line.
   let before_cursor_list = split(trim(a:before_cursor))
   let previous_line_list = split(trim(getline(line('.') - 1)))
+  let previous_previous_line_list = split(trim(getline(line('.') - 2)))
 
-  let last_word = empty(before_cursor_list) ? "" : before_cursor_list[-1]
-  let last_word_on_previous = empty(previous_line_list) ? "" : previous_line_list[-1]
+  let text_to_check = s:last_two_words(before_cursor_list, previous_line_list)
+  let text_to_check_previous = s:last_two_words(previous_line_list, previous_previous_line_list)
 
-  if s:no_error_in(last_word)
+  if s:no_error_in(text_to_check)
         \ &&
         \ (
         \   (top_of_window && cursor_can_move_vertically)
         \   ||
-        \   s:no_error_in(last_word_on_previous)
+        \   s:no_error_in(text_to_check_previous)
         \ )
     " There's no spelling mistake!
     return 1
   endif
 
   return 0
+endfunction
+
+" Return a string containing the last two words in the buffer content
+" described by previous_line_list and line_list, or the empty string if
+" line_list is empty
+function! s:last_two_words(line_list, previous_line_list)
+  if len(a:line_list) > 1
+    return a:line_list[-2] .. ' ' .. a:line_list[-1]
+  elseif len(a:line_list) == 1
+    if !empty(a:previous_line_list)
+      return a:previous_line_list[-1] .. ' ' .. a:line_list[0]
+    else
+      return a:line_list[0]
+    endif
+  else
+    return ""
+  endif
 endfunction
 
 " Little helper for checking if there's a spelling error in a string
